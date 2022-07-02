@@ -3,8 +3,9 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 from csv_generator import Output
-from employee_cpf_record import Agency
+from employee_cpf_record import Agency, EmploymentStatus
 from input_file import InputFileConfig, InvalidSheetError, InputFile
+from utils import parse_dt, parse_birth_dt
 
 
 class TestInputFileConfig(TestCase):
@@ -50,6 +51,22 @@ class TestInputFile(TestCase):
         actual = InputFile(self.filename, config).extract_row_value(row, Output.id_number)
         self.assertEqual(None, actual)
 
+    def test_extract_row_value_support_array_indexes(self):
+        config = InputFileConfig(column_index_mapping={
+            Output.date_of_birth: [0, 1]
+        })
+        row = (MagicMock(value='haha'), MagicMock(value='Sharon Mendez'))
+        actual = InputFile(self.filename, config).extract_row_value(row, Output.date_of_birth)
+        self.assertEqual(['haha', 'Sharon Mendez'], actual)
+
+    def test_extract_row_value_support_array_indexes(self):
+        config = InputFileConfig(column_index_mapping={
+            Output.date_of_birth: [0, 1]
+        })
+        row = (MagicMock(value='haha'), MagicMock(value='Sharon Mendez'))
+        actual = InputFile(self.filename, config).extract_row_value(row, Output.date_of_birth)
+        self.assertEqual(['haha', 'Sharon Mendez'], actual)
+
     def test_additional_handlers_should_take_custom_fn_return_processed_value(self):
         handlers = {
             Output.agency_fund: lambda x: abs(x),
@@ -61,6 +78,17 @@ class TestInputFile(TestCase):
         actual = InputFile(self.filename, config).process_row_value(row, Output.agency_fund)
         self.assertEqual(1.5, actual)
 
+    def test_additional_handlers_support_multiple_arguments(self):
+        handlers = {
+            Output.date_of_birth: lambda x, y: parse_birth_dt(x, y),
+        }
+        config = InputFileConfig(sheet_name='Jun', column_index_mapping={
+            Output.date_of_birth: [0, 1],
+        }, additional_handlers=handlers)
+        row = (MagicMock(value='30/7'), MagicMock(value=1979))
+        actual = InputFile(self.filename, config).process_row_value(row, Output.date_of_birth)
+        self.assertEqual('30.Jul.1979', actual)
+
     def test_create_record_should_return_correct_values(self):
         config = InputFileConfig(
             sheet_name='Jun',
@@ -68,10 +96,16 @@ class TestInputFile(TestCase):
                 Output.name: 1,
                 Output.ordinary_wage: 7,
                 Output.additional_wage: 10,
-                Output.agency_fund: 17
+                Output.agency_fund: 17,
+                Output.date_of_birth: [23, 24],
+                Output.date_left: 21,
+                Output.employment_status: 21
             },
             additional_handlers={
                 Output.agency_fund: lambda x: abs(x),
+                Output.date_of_birth: lambda x, y: parse_birth_dt(x, y),
+                Output.date_left: lambda x: parse_dt(x) if x else None,
+                Output.employment_status: lambda x: EmploymentStatus.Left if x else EmploymentStatus.Existing,
             }
         )
         file = InputFile(self.filename, config)
@@ -81,4 +115,8 @@ class TestInputFile(TestCase):
         self.assertEqual(1230.25, record.additional_wage)
         self.assertEqual(1.5, record.agency_fund)
         self.assertEqual(Agency.CDAC, record.agency)
-
+        self.assertEqual('Sharon Mendez', record.name)
+        self.assertEqual('30.Jul.1979', record.date_of_birth)
+        self.assertEqual(None, record.date_left)
+        self.assertEqual(EmploymentStatus.Existing, record.employment_status)
+        self.assertTrue(record.sdl_payable)

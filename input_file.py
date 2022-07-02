@@ -72,24 +72,39 @@ class InputFile:
             employment_status=self.process_row_value(row, Output.employment_status),
             date_left=self.process_row_value(row, Output.date_left),
             date_of_birth=self.process_row_value(row, Output.date_of_birth),
-            sdl_payable=self.process_row_value(row, Output.sdl_payable),
+            sdl_payable=self.process_row_value(row, Output.sdl_payable) or True,
         )
 
     def process_row_value(self, row, column_name):
-        raw = self.extract_row_value(row, column_name)
+        raws = self.extract_row_value(row, column_name)
+
+        # handle for >1 raw value
+        if len(raws) > 1:
+            if column_name in self.config.additional_handlers:
+                return self.config.additional_handlers.get(column_name)(*raws)
+            else:
+                raise NotImplementedError()
+
+        # default: 1 raw value
+        raw = raws[0]
         if column_name in self.config.additional_handlers:
             return self.config.additional_handlers.get(column_name)(raw)
         return raw
 
-    def extract_row_value(self, row, column_name):
+    def extract_row_value(self, row, column_name) -> List:
         try:
             if column_name in self.config.column_index_mapping:
                 index = self.config.column_index_mapping.get(column_name)
-                return row[index].value
+                if isinstance(index, list):
+                    return [row[i].value for i in index]
+                elif isinstance(index, int):
+                    return [row[index].value]
+                else:
+                    raise IndexError()
         except Exception as e:
             raise e
         else:
-            return None
+            return [None]
 
     def process(self) -> List[EmployeeCPFRecord]:
         employees = self.get_employees_from_sheet()

@@ -27,13 +27,13 @@ class EmploymentStatus(Enum):
 
 
 class EmployeeCPFRecord:
-    def __init__(self, id_number=None, name=None, ordinary_wage=None, addtional_wage=None, agency_fund=None, agency=None, citizenship=None, pr_start_date=None,
+    def __init__(self, id_number=None, name=None, ordinary_wage=None, additional_wage=None, agency_fund=None, agency=None, citizenship=None, pr_start_date=None,
                  employment_status=None,
                  date_left=None, date_of_birth=None, cpf_contribution_type=None, sdl_payable=None, ) -> None:
         self.id_number = id_number
         self.name = name
         self.ordinary_wage = ordinary_wage
-        self.additional_wage = addtional_wage
+        self.additional_wage = additional_wage
         self.agency_fund = agency_fund
         self.agency = agency
         self.citizenship = citizenship
