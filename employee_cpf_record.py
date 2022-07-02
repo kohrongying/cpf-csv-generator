@@ -27,7 +27,8 @@ class EmploymentStatus(Enum):
 
 
 class EmployeeCPFRecord:
-    def __init__(self, id_number=None, name=None, ordinary_wage=None, additional_wage=None, agency_fund=None, agency=None, citizenship=None, pr_start_date=None,
+    def __init__(self, id_number=None, name=None, ordinary_wage=None, additional_wage=None, agency_fund=None,
+                 agency=None, citizenship=None, pr_start_date=None,
                  employment_status=None,
                  date_left=None, date_of_birth=None, cpf_contribution_type=None, sdl_payable=None, ) -> None:
         self.id_number = id_number
@@ -43,23 +44,3 @@ class EmployeeCPFRecord:
         self.date_left = date_left
         self.date_of_birth = date_of_birth
         self.sdl_payable = sdl_payable
-    
-    def name(self, value):
-        self.name = value
-    
-    def id_number(self, value):
-        self.id_number = value
-
-    def ordinary_wage(self, value):
-        self.ordinary_wage = value
-
-    def id_number(self, value):
-        self.id_number = value
-        
-    @property
-    def sdl_payable(self):
-        return 
-    
-    @sdl_payable.setter
-    def sdl_payable(self, value):
-        pass
