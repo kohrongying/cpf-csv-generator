@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
 
+from csv_generator import Output
 from input_file import InputFileConfig, InvalidSheetError, InputFile
 
 
@@ -34,16 +35,16 @@ class TestInputFile(TestCase):
 
     def test_extract_row_value_with_title_should_return_value(self):
         config = InputFileConfig(column_index_mapping={
-            'name': 1
+            Output.name: 1
         })
         row = (0, MagicMock(value='Sharon Mendez'))
-        actual = InputFile(self.filename, config).extract_row_value(row, 'name')
+        actual = InputFile(self.filename, config).extract_row_value(row, Output.name)
         self.assertEqual('Sharon Mendez', actual)
 
     def test_input_file_config_without_title_should_return_None(self):
         config = InputFileConfig(column_index_mapping={
-            'name': 1
+            Output.name: 1
         })
         row = (0, MagicMock(value='Sharon Mendez'))
-        actual = InputFile(self.filename, config).extract_row_value(row, 'id number')
+        actual = InputFile(self.filename, config).extract_row_value(row, Output.id_number)
         self.assertEqual(None, actual)

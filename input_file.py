@@ -3,6 +3,7 @@ from typing import List, Tuple
 from openpyxl import load_workbook
 from datetime import datetime
 
+from csv_generator import Output
 from employee_cpf_record import EmployeeCPFRecord
 
 
@@ -57,7 +58,7 @@ class InputFile:
 
     def create_record(self, row) -> EmployeeCPFRecord:
         e = EmployeeCPFRecord(
-            name=self.extract_row_value(row, 'name')
+            name=self.extract_row_value(row, Output.name)
         )
         return e
 
