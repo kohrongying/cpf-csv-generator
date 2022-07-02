@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 from csv_generator import Output
+from employee_cpf_record import Agency
 from input_file import InputFileConfig, InvalidSheetError, InputFile
 
 
@@ -41,10 +42,43 @@ class TestInputFile(TestCase):
         actual = InputFile(self.filename, config).extract_row_value(row, Output.name)
         self.assertEqual('Sharon Mendez', actual)
 
-    def test_input_file_config_without_title_should_return_None(self):
+    def test_extract_row_value_without_title_should_return_None(self):
         config = InputFileConfig(column_index_mapping={
             Output.name: 1
         })
         row = (0, MagicMock(value='Sharon Mendez'))
         actual = InputFile(self.filename, config).extract_row_value(row, Output.id_number)
         self.assertEqual(None, actual)
+
+    def test_additional_handlers_should_take_custom_fn_return_processed_value(self):
+        handlers = {
+            Output.agency_fund: lambda x: abs(x),
+        }
+        config = InputFileConfig(sheet_name='Jun', column_index_mapping={
+            Output.agency_fund: 1,
+        }, additional_handlers=handlers)
+        row = (0, MagicMock(value=-1.5))
+        actual = InputFile(self.filename, config).process_row_value(row, Output.agency_fund)
+        self.assertEqual(1.5, actual)
+
+    def test_create_record_should_return_correct_values(self):
+        config = InputFileConfig(
+            sheet_name='Jun',
+            column_index_mapping={
+                Output.name: 1,
+                Output.ordinary_wage: 7,
+                Output.additional_wage: 10,
+                Output.agency_fund: 17
+            },
+            additional_handlers={
+                Output.agency_fund: lambda x: abs(x),
+            }
+        )
+        file = InputFile(self.filename, config)
+        sheet_rows = file.get_employees_from_sheet()
+        record = file.create_record(sheet_rows[0])
+        self.assertEqual(2000, record.ordinary_wage)
+        self.assertEqual(1230.25, record.additional_wage)
+        self.assertEqual(1.5, record.agency_fund)
+        self.assertEqual(Agency.CDAC, record.agency)
+

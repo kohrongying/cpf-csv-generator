@@ -4,14 +4,16 @@ from openpyxl import load_workbook
 from datetime import datetime
 
 from csv_generator import Output
-from employee_cpf_record import EmployeeCPFRecord
+from employee_cpf_record import EmployeeCPFRecord, Agency
 
 
 class InputFileConfig:
-    def __init__(self, sheet_name=None, column_index_mapping=None, desired_rows_config=None) -> None:
+    def __init__(self, sheet_name=None, column_index_mapping=None, desired_rows_config=None,
+                 additional_handlers={}) -> None:
         self.sheet_name = sheet_name or datetime.now().strftime('%b')
         self.column_index_mapping = column_index_mapping
         self.desired_rows_config = desired_rows_config or (1, 'NAME', 'TOTAL')
+        self.additional_handlers = additional_handlers
 
 
 class InvalidSheetError(Exception):
@@ -57,10 +59,27 @@ class InputFile:
         return employees
 
     def create_record(self, row) -> EmployeeCPFRecord:
-        e = EmployeeCPFRecord(
-            name=self.extract_row_value(row, Output.name)
+        return EmployeeCPFRecord(
+            name=self.process_row_value(row, Output.name),
+            id_number=self.process_row_value(row, Output.id_number),
+            ordinary_wage=self.process_row_value(row, Output.ordinary_wage),
+            additional_wage=self.process_row_value(row, Output.additional_wage),
+            agency_fund=self.process_row_value(row, Output.agency_fund),
+            agency=self.process_row_value(row, Output.agency) or Agency.CDAC,
+            citizenship=self.process_row_value(row, Output.citizenship),
+            pr_start_date=self.process_row_value(row, Output.pr_start_date),
+            cpf_contribution_type=self.process_row_value(row, Output.cpf_contribution_type),
+            employment_status=self.process_row_value(row, Output.employment_status),
+            date_left=self.process_row_value(row, Output.date_left),
+            date_of_birth=self.process_row_value(row, Output.date_of_birth),
+            sdl_payable=self.process_row_value(row, Output.sdl_payable),
         )
-        return e
+
+    def process_row_value(self, row, column_name):
+        raw = self.extract_row_value(row, column_name)
+        if column_name in self.config.additional_handlers:
+            return self.config.additional_handlers.get(column_name)(raw)
+        return raw
 
     def extract_row_value(self, row, column_name):
         try:
