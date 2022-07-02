@@ -3,6 +3,8 @@ from typing import List, Tuple
 
 from openpyxl import load_workbook
 
+from employee import Employee, CPFEntry
+
 
 def run():
     filename: str = './TnT-Salary-2022.xlsx'
@@ -14,7 +16,7 @@ class InvalidSheetError(Exception):
 
 
 def load_work_sheet(filename, *args, **kwargs):
-    wb = load_workbook(filename)
+    wb = load_workbook(filename, data_only=True)
     if kwargs.get('month', None):
         current_month = kwargs.get('month')
     else:
@@ -49,5 +51,13 @@ def get_employees_from_sheet(ws):
     return employees
 
 
+def create_cpf_entry(row):
+    return CPFEntry(
+        ordinary_wage=row[7].value,
+        addtional_wage=row[10].value,
+        agency_fund=abs(row[17].value)
+    )
+
+
 if __name__ == '__main__':
-    load_current_month_sheet('./TnT-Salary-2022.xlsx')
+    load_work_sheet('./TnT-Salary-2022.xlsx')
