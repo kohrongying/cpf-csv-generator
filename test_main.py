@@ -1,8 +1,9 @@
 import datetime
 from unittest import TestCase
 
-from employee import Agency
-from main import load_work_sheet, get_employees_from_sheet, create_cpf_entry, InvalidSheetError
+from employee import Agency, EmploymentStatus
+from main import load_work_sheet, get_employees_from_sheet, create_cpf_entry, InvalidSheetError, create_employee, \
+    parse_dt, parse_birth_dt
 
 
 class TestMain(TestCase):
@@ -37,3 +38,24 @@ class TestMain(TestCase):
         self.assertEqual(1230.25, cpf_entry.additional_wage)
         self.assertEqual(1.50, cpf_entry.agency_fund)
         self.assertEqual(Agency.CDAC, cpf_entry.agency)
+
+    def test_parse_dt(self):
+        dt = datetime.datetime.strptime('1915-04-20 00:00:00', '%Y-%m-%d %H:%M:%S')
+        actual = parse_dt(dt)
+        self.assertEqual('20.Apr.2015', actual)
+
+    def test_parse_birth_dt(self):
+        actual = parse_birth_dt('30/07', 1979)
+        self.assertEqual('30.Jul.1979', actual)
+
+    def test_create_employee(self):
+        ws = load_work_sheet(self.filename, month='Jun')
+        rows = get_employees_from_sheet(ws)
+        row = rows[0]
+        employee = create_employee(row)
+        self.assertEqual('Sharon Mendez', employee.name)
+        self.assertEqual('20.Apr.2015', employee.start_date)
+        self.assertEqual('30.Jul.1979', employee.date_of_birth)
+        self.assertEqual(None, employee.date_left)
+        self.assertEqual(EmploymentStatus.Existing, employee.employment_status)
+        self.assertTrue(employee.sdl_payable)

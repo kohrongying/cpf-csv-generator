@@ -1,14 +1,9 @@
 import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from openpyxl import load_workbook
 
-from employee import Employee, CPFEntry
-
-
-def run():
-    filename: str = './TnT-Salary-2022.xlsx'
-    employees = get_employees_from_sheet(filename)
+from employee import Employee, CPFEntry, EmploymentStatus
 
 
 class InvalidSheetError(Exception):
@@ -23,6 +18,7 @@ def load_work_sheet(filename, *args, **kwargs):
         current_month = datetime.datetime.now().strftime('%b')
     try:
         ws = wb[current_month]
+        wb.close()
         return ws
     except KeyError as e:
         raise InvalidSheetError from e
@@ -59,5 +55,52 @@ def create_cpf_entry(row):
     )
 
 
+def parse_dt(input_dt: datetime.datetime) -> str:
+    if input_dt.year < 1980:
+        modified_dt = datetime.datetime(year=input_dt.year + 100, month=input_dt.month, day=input_dt.day)
+        return modified_dt.strftime('%d.%b.%Y')
+    else:
+        return input_dt.strftime('%d.%b.%Y')
+
+
+def parse_birth_dt(birth_dt_str, birth_yr) -> str:
+    birth_dt = datetime.datetime.strptime(birth_dt_str, '%d/%m')
+    return f'{birth_dt.strftime("%d.%b")}.{birth_yr}'
+
+
+def parse_date_left(input_dt: datetime.datetime) -> Optional[str]:
+    if input_dt:
+        return parse_dt(input_dt)
+    return None
+
+
+def get_employment_status(input_dt: datetime.datetime) -> EmploymentStatus:
+    if input_dt:
+        return EmploymentStatus.Left
+    return EmploymentStatus.Existing
+
+
+def create_employee(row):
+    start_dt = parse_dt(row[20].value)
+    birth_dt = parse_birth_dt(row[23].value, row[24].value)
+    date_left = parse_date_left(row[21].value)
+    employment_status = get_employment_status(row[21].value)
+    e = Employee(
+        id_number='',
+        name=row[1].value,
+        citizenship='',
+        start_date=start_dt,
+        employment_status=employment_status,
+        date_left=date_left,
+        date_of_birth=birth_dt,
+        cpf_contribution_type='',
+        sdl_payable=True
+    )
+    e.set_cpf_entry(create_cpf_entry(row))
+    return e
+
+
 if __name__ == '__main__':
-    load_work_sheet('./TnT-Salary-2022.xlsx')
+    ws = load_work_sheet('./TnT-Salary-2022.xlsx')
+    rows = get_employees_from_sheet(ws)
+    employees = [create_employee(row) for row in rows]
