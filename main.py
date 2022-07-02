@@ -13,9 +13,12 @@ class InvalidSheetError(Exception):
     pass
 
 
-def load_current_month_sheet(filename):
+def load_work_sheet(filename, *args, **kwargs):
     wb = load_workbook(filename)
-    current_month = datetime.datetime.now().strftime('%b')
+    if kwargs.get('month', None):
+        current_month = kwargs.get('month')
+    else:
+        current_month = datetime.datetime.now().strftime('%b')
     try:
         ws = wb[current_month]
         return ws
@@ -27,8 +30,7 @@ class SheetParserSM:
     Pending, Begin, End = range(3)
 
 
-def get_employees_from_sheet(filename):
-    ws = load_current_month_sheet(filename)
+def get_employees_from_sheet(ws):
     employees: List[Tuple] = []
     state = SheetParserSM.Pending
     for row in ws.iter_rows(min_row=1, max_col=30):
