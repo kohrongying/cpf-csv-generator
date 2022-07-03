@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -27,21 +28,18 @@ class EmploymentStatus(Enum):
     New_Leaving = 'New & Leaving'
 
 
+@dataclass
 class EmployeeCPFRecord:
-    def __init__(self, id_number=None, name=None, ordinary_wage=None, additional_wage=None, agency_fund=None,
-                 agency=None, citizenship=None, pr_start_date=None,
-                 employment_status=None,
-                 date_left=None, date_of_birth=None, cpf_contribution_type=None, sdl_payable=None, ) -> None:
-        self.id_number = id_number
-        self.name = name
-        self.ordinary_wage = ordinary_wage
-        self.additional_wage = additional_wage
-        self.agency_fund = agency_fund
-        self.agency = agency
-        self.citizenship = citizenship
-        self.pr_start_date = pr_start_date
-        self.cpf_contribution_type = cpf_contribution_type
-        self.employment_status = employment_status
-        self.date_left = date_left
-        self.date_of_birth = date_of_birth
-        self.sdl_payable = sdl_payable
+    id_number: str = None
+    name: str = None
+    ordinary_wage: float = None
+    additional_wage: float = None
+    agency_fund: float = None
+    agency: Agency = Agency.CDAC
+    citizenship: Citizenship = None
+    pr_start_date: str = None
+    cpf_contribution_type: CPFContributionType = None
+    employment_status: EmploymentStatus = None
+    date_left: str = None
+    date_of_birth: str = None
+    sdl_payable: bool = True
