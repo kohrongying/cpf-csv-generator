@@ -1,10 +1,11 @@
-from csv_generator import Output
+from csv_generator import Output, CSVGenerator
 from employee_cpf_record import EmploymentStatus
 from input_file import InputFileConfig, InputFile
 from utils import parse_birth_dt, parse_dt
 
 if __name__ == '__main__':
     config = InputFileConfig(
+        desired_rows_config=(1, 'NAME', 'GRAND TOTAL'),
         column_index_mapping={
             Output.name: 1,
             Output.ordinary_wage: 7,
@@ -24,4 +25,5 @@ if __name__ == '__main__':
     filename = './TnT-Salary-2022.xlsx'
     file = InputFile(filename, config)
     employees = file.process()
-    print(employees)
+
+    CSVGenerator().save(records=employees)

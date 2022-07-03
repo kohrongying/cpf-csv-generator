@@ -10,6 +10,7 @@ class Citizenship(Enum):
 class CPFContributionType(Enum):
     FULL_GRAD = 'F/G'
     GRAD_GRAD = 'G/G'
+    NA = ''
 
 
 class Agency(Enum):

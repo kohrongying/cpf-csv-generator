@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from datetime import datetime
 
 from csv_generator import Output
-from employee_cpf_record import EmployeeCPFRecord, Agency
+from employee_cpf_record import EmployeeCPFRecord, Agency, CPFContributionType, Citizenship
 
 
 class InputFileConfig:
@@ -66,9 +66,9 @@ class InputFile:
             additional_wage=self.process_row_value(row, Output.additional_wage),
             agency_fund=self.process_row_value(row, Output.agency_fund),
             agency=self.process_row_value(row, Output.agency) or Agency.CDAC,
-            citizenship=self.process_row_value(row, Output.citizenship),
+            citizenship=self.process_row_value(row, Output.citizenship) or Citizenship.SG,
             pr_start_date=self.process_row_value(row, Output.pr_start_date),
-            cpf_contribution_type=self.process_row_value(row, Output.cpf_contribution_type),
+            cpf_contribution_type=self.process_row_value(row, Output.cpf_contribution_type) or CPFContributionType.NA,
             employment_status=self.process_row_value(row, Output.employment_status),
             date_left=self.process_row_value(row, Output.date_left),
             date_of_birth=self.process_row_value(row, Output.date_of_birth),
