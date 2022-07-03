@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 import csv
 from typing import List
@@ -18,7 +19,7 @@ class CSVGenerator:
             reader = csv.reader(csv_file)
             field_names = next(reader)
 
-        with open('new.csv', mode='w') as csv_file:
+        with open(f'CPF-ESS_Employee_{datetime.today().strftime("%Y-%m-%d")}.csv', mode='w') as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(field_names)
 
